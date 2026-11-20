@@ -1,0 +1,160 @@
+const galleryItems = [
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2019/05/14/16/43/himilayan-blue-poppy-4202825__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2019/05/14/16/43/himilayan-blue-poppy-4202825_1280.jpg',
+    description: 'Hokkaido Flower',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2019/05/14/22/05/container-4203677__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2019/05/14/22/05/container-4203677_1280.jpg',
+    description: 'Container Haulage Freight',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2019/05/16/09/47/beach-4206785__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2019/05/16/09/47/beach-4206785_1280.jpg',
+    description: 'Aerial Beach View',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2016/11/18/16/19/flowers-1835619__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2016/11/18/16/19/flowers-1835619_1280.jpg',
+    description: 'Flower Blooms',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2018/09/13/10/36/mountains-3674334__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2018/09/13/10/36/mountains-3674334_1280.jpg',
+    description: 'Alpine Mountains',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2019/05/16/23/04/landscape-4208571__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2019/05/16/23/04/landscape-4208571_1280.jpg',
+    description: 'Mountain Lake Sailing',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2019/05/17/09/27/the-alps-4209272__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2019/05/17/09/27/the-alps-4209272_1280.jpg',
+    description: 'Alpine Spring Meadows',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2019/05/16/21/10/landscape-4208255__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2019/05/16/21/10/landscape-4208255_1280.jpg',
+    description: 'Nature Landscape',
+  },
+  {
+    preview:
+      'https://cdn.pixabay.com/photo/2019/05/17/04/35/lighthouse-4208843__340.jpg',
+    original:
+      'https://cdn.pixabay.com/photo/2019/05/17/04/35/lighthouse-4208843_1280.jpg',
+    description: 'Lighthouse Coast Sea',
+  },
+];
+
+const galleryContainer = document.querySelector('.js-gallery');
+const lightbox = document.querySelector('.lightbox');
+const lightboxImage = document.querySelector('.lightbox__image');
+const closeLightboxButton = document.querySelector(
+  '[data-action="close-lightbox"]',
+);
+const lightboxOverlay = document.querySelector('.lightbox__overlay');
+
+let currentImageIndex = 0;
+
+const createGalleryItemMarkup = ({ preview, original, description }) =>
+  `<li class="gallery__item">
+    <a class="gallery__link" href="${original}">
+      <img
+        class="gallery__image"
+        src="${preview}"
+        data-source="${original}"
+        alt="${description}"
+      />
+    </a>
+  </li>`;
+
+const galleryMarkup = galleryItems.map(createGalleryItemMarkup).join('');
+galleryContainer.insertAdjacentHTML('beforeend', galleryMarkup);
+
+const openLightbox = () => {
+  lightbox.classList.remove('is-hidden');
+  window.addEventListener('keydown', onKeyDown);
+};
+
+const closeLightbox = () => {
+  lightbox.classList.add('is-hidden');
+  // Прибираємо атрибут, а не ставимо пустий рядок: пустий src
+  // змушує браузер вантажити саму сторінку (404).
+  lightboxImage.removeAttribute('src');
+  lightboxImage.alt = '';
+  window.removeEventListener('keydown', onKeyDown);
+};
+
+const setLightboxImage = (index) => {
+  const { original, description } = galleryItems[index];
+
+  currentImageIndex = index;
+  lightboxImage.src = original;
+  lightboxImage.alt = description;
+};
+
+const showPreviousImage = () => {
+  const index =
+    (currentImageIndex - 1 + galleryItems.length) % galleryItems.length;
+  setLightboxImage(index);
+};
+
+const showNextImage = () => {
+  const index = (currentImageIndex + 1) % galleryItems.length;
+  setLightboxImage(index);
+};
+
+const onGalleryClick = (event) => {
+  event.preventDefault();
+
+  const galleryImage = event.target.closest('.gallery__image');
+  if (!galleryImage) {
+    return;
+  }
+
+  const galleryLink = galleryImage.closest('.gallery__link');
+  const itemIndex = Array.from(galleryContainer.children).indexOf(
+    galleryLink.parentElement,
+  );
+
+  setLightboxImage(itemIndex);
+  openLightbox();
+};
+
+const onKeyDown = (event) => {
+  switch (event.code) {
+    case 'Escape':
+      closeLightbox();
+      break;
+    case 'ArrowLeft':
+      showPreviousImage();
+      break;
+    case 'ArrowRight':
+      showNextImage();
+      break;
+    default:
+      return;
+  }
+};
+
+galleryContainer.addEventListener('click', onGalleryClick);
+closeLightboxButton.addEventListener('click', closeLightbox);
+lightboxOverlay.addEventListener('click', closeLightbox);
